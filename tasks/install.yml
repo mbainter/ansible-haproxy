@@ -26,16 +26,14 @@
 
 ## PACKAGE INSTALL
 
-- name: 'Check epel repo'
-  shell: yum repolist | grep -qi EPEL
-  register: epel_repo_check
-  when: ansible_pkg_mgr == 'yum'
 
-- name: 'Add epel repo'
-  template: src=epel.repo
-        dest=/etc/yum.repos.d/epel.repo
-        owner=root group=root mode=0644
-  when: ansible_pkg_mgr == 'yum' and epel_repo_check.rc != 0
+- name: 'Install EPEL repository'
+  yum: name="{{ epel_repo_url }}" state=present
+  when: ansible_os_family == "RedHat" and ansible_distribution != "Amazon"
+ 
+- name: 'Import EPEL Key'
+  rpm_key: key="{{ epel_repo_key_url }}" state=present
+  when: ansible_os_family == "RedHat" and ansible_distribution != "Amazon"
 
 - name: 'Installs haproxy as well as socat for socket api'
   yum: name={{ item }} state=latest
